@@ -1,7 +1,7 @@
 package org.example.sii_task.errorHandling;
 
-public class FundraiserDoesNotExist extends RuntimeException {
-    public FundraiserDoesNotExist(String message) {
+public class DoesNotExist extends RuntimeException {
+    public DoesNotExist(String message) {
         super(message);
     }
 }

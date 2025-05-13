@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: sii_task
+  h2:
+    console:
+      path: /console
+  datasource:
+      url: jdbc:h2:mem:charity
+      username: sa
+      password:
+  jpa:
+      show-sql: true
+      hibernate:
+        ddl-auto: none
+      defer-datasource-initialization: true
+  sql:
+      init:
+        data-locations: classpath:sql-data/data.sql

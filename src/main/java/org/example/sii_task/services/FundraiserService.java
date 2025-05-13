@@ -1,5 +1,7 @@
 package org.example.sii_task.services;
 
+import org.example.sii_task.errorHandling.AlreadyExistsException;
+import org.example.sii_task.models.ApiError;
 import org.example.sii_task.models.fundraiser.Fundraiser;
 import org.example.sii_task.models.fundraiser.FundraiserReturnDTO;
 import org.example.sii_task.repositories.FundraiserRepository;
@@ -15,10 +17,10 @@ public class FundraiserService {
     @Autowired
     FundraiserRepository fundraiserRepository;
 
-    public Fundraiser createFundraiser(Fundraiser fundraiser) throws Exception {
+    public Fundraiser createFundraiser(Fundraiser fundraiser) {
         Optional<Fundraiser> optionalFundraiser = fundraiserRepository.getFundraiserByName(fundraiser.getName());
         if (optionalFundraiser.isPresent()) {
-            throw new Exception("Fundraiser already exist");
+            throw new AlreadyExistsException("Fundraiser with name " + fundraiser.getName() + " already exists");
         }
         return fundraiserRepository.save(fundraiser);
     }

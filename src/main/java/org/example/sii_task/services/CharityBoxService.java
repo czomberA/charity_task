@@ -1,5 +1,6 @@
 package org.example.sii_task.services;
 
+import org.example.sii_task.errorHandling.*;
 import org.example.sii_task.models.collected.Collected;
 import org.example.sii_task.models.collected.CollectedDTO;
 import org.example.sii_task.models.charityBox.CharityBox;
@@ -11,6 +12,7 @@ import org.example.sii_task.repositories.FundraiserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,48 +29,37 @@ public class CharityBoxService {
     private CurrencyService currencyService;
 
 
-    public Fundraiser setFundraiser(String fundraiser) throws Exception {
+    public Fundraiser setFundraiser(String fundraiser) {
 
         Optional<Fundraiser> existing = fundraiserRepository.getFundraiserByName(fundraiser);
 
         if (existing.isPresent()) {
             return existing.get();
         } else {
-            throw new Exception("Fundraiser does not exist");
+            throw new DoesNotExist(String.format("Fundraiser %s does not exist", fundraiser));
         }
 
     }
 
-    public String setIdentifier(String identifier) throws Exception {
-        Optional<CharityBox> existing = charityBoxRepository.getCharityBoxByIdentifier(identifier);
-        if (existing.isPresent()) {
-            return existing.get().getIdentifier();
-        } else {
-            throw new Exception("Box does not exist");
-        }
-    }
-
-    public CharityBox registerBox(CharityBox charityBox) {
+    public void registerBox(CharityBox charityBox) {
         charityBoxRepository.save(charityBox);
         fundraiserRepository.save(charityBox.getFundraiser());
-        return charityBox;
     }
 
-    public boolean canAssign(String id) throws Exception {
+    public void canAssign(String id){
         Optional<CharityBox> box = charityBoxRepository.getCharityBoxByIdentifier(id);
         if (box.isEmpty()) {
-            throw new Exception("Box does not exist");
+            throw new DoesNotExist(String.format("Box %s does not exist", id));
         }
         CharityBox foundBox = box.get();
         if (foundBox.getFundraiser() != null) {
-            throw new Exception("Already assigned fundraiser");
+            throw new AlreadyAssigned("Already assigned to a fundraiser");
         }
         if (!foundBox.getCollections().isEmpty()) {
-            throw new Exception("Not empty");
+            throw new NotEmpty("Not empty");
         } else {
             System.out.println(foundBox.getCollections());
         }
-        return true;
     }
 
     public List<CharityBoxReturnDTO> getAllBoxes() {
@@ -76,16 +67,8 @@ public class CharityBoxService {
         for (CharityBox charityBox : charityBoxRepository.findAll()) {
             CharityBoxReturnDTO boxDTO= new CharityBoxReturnDTO();
             boxDTO.setIdentifier(charityBox.getIdentifier());
-            if (charityBox.getFundraiser() != null) {
-                boxDTO.setAssigned(true);
-            } else {
-                boxDTO.setAssigned(false);
-            }
-            if (charityBox.getCollections().isEmpty()) {
-                boxDTO.setEmpty(true);
-            } else {
-                boxDTO.setEmpty(false);
-            }
+            boxDTO.setAssigned(charityBox.getFundraiser() != null);
+            boxDTO.setEmpty(charityBox.getCollections().isEmpty());
             boxes.add(boxDTO);
         }
         return boxes;
@@ -96,7 +79,10 @@ public class CharityBoxService {
     }
 
     public CharityBox createBox(CharityBox charityBox) {
-        //TODO: check if exists
+        Optional<CharityBox> box = charityBoxRepository.getCharityBoxByIdentifier(charityBox.getIdentifier());
+        if (box.isPresent()){
+            throw new AlreadyExistsException("Box already exists");
+        }
         return charityBoxRepository.save(charityBox);
     }
 
@@ -105,15 +91,13 @@ public class CharityBoxService {
         if (optionalBox.isPresent()) {
             CharityBox box = optionalBox.get();
             Fundraiser fundraiser = box.getFundraiser();
-
             if (fundraiser != null) {
                 fundraiser.getBoxes().remove(box);
                 fundraiserRepository.save(fundraiser);
             }
-
             charityBoxRepository.delete(box);
         } else {
-            throw new RuntimeException("Box does not exist. May have been removed already.");
+            throw new DoesNotExist("Box does not exist. May have been removed already.");
         }
     }
 
@@ -121,30 +105,25 @@ public class CharityBoxService {
         Optional<CharityBox> optionalBox = charityBoxRepository.getCharityBoxByIdentifier(collectedDTO.getCharityBox());
         CharityBox box;
         if (optionalBox.isEmpty()) {
-            throw new RuntimeException("Box does not exist. Cannot donate.");
+            throw new DoesNotExist("Box does not exist. Cannot donate.");
         }
-
         box = optionalBox.get();
-        if (box.getFundraiser() == null) {
-            throw new RuntimeException("Box is not assigned to a fundraiser. Cannot donate.");
-        }
-        Collected c = box.donate(collectedDTO.getAmount(), collectedDTO.getCurrency());
+        box.donate(collectedDTO.getAmount(), collectedDTO.getCurrency());
         charityBoxRepository.save(box);
-        //collectedRepository.save(c);
     }
 
     public void empty(String id) {
         Optional<CharityBox> optionalBox = charityBoxRepository.getCharityBoxByIdentifier(id);
 
         if (optionalBox.isEmpty()) {
-            throw new RuntimeException("Box does not exist. Cannot empty.");
+            throw new DoesNotExist("Box does not exist. Cannot empty.");
         }
         CharityBox box = optionalBox.get();
         if (box.getFundraiser() == null) {
-            throw new RuntimeException("Box is not assigned. Cannot empty.");
+            throw new NotAssigned("Box is not assigned. Cannot empty.");
         }
         if (box.getCollections().isEmpty()) {
-            throw new RuntimeException("Box is empty. Nothing to transfer.");
+            return;
         }
 
         String currencyOfFundraiser = box.getFundraiser().getCurrency().name();
@@ -157,14 +136,15 @@ public class CharityBoxService {
                 box.getFundraiser().donate(c.getAmount());
             } else {
                 if (currencyOfFundraiser.equals("PLN")) {
-                    double err = currencyService.getRateToPln(c.getCurrency().name());
-                    box.getFundraiser().donate(c.getAmount()*err);
+                    BigDecimal err = currencyService.getRateToPln(c.getCurrency().name());
+                    System.out.println(err);
+                    box.getFundraiser().donate(c.getAmount().multiply(err).setScale(2, BigDecimal.ROUND_HALF_UP));
 
                 } else if (c.getCurrency().name().equals("PLN")) {
-                    double err = currencyService.getRateFromPLN(currencyOfFundraiser, c.getAmount());
+                    BigDecimal err = currencyService.getRateFromPLN(currencyOfFundraiser, c.getAmount()).setScale(2, BigDecimal.ROUND_HALF_UP);
                     box.getFundraiser().donate(err);
                 } else {
-                    double err = currencyService.convertCurrency(c.getCurrency().name(), currencyOfFundraiser, c.getAmount());
+                    BigDecimal err = currencyService.convertCurrency(c.getCurrency().name(), currencyOfFundraiser, c.getAmount()).setScale(2, BigDecimal.ROUND_HALF_UP);
                     box.getFundraiser().donate(err);
                 }
             }

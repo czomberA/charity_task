@@ -2,10 +2,12 @@ package org.example.sii_task.models.charityBox;
 
 import jakarta.persistence.*;
 import jakarta.persistence.Entity;
+import org.example.sii_task.errorHandling.BadCurrency;
 import org.example.sii_task.models.collected.Collected;
 import org.example.sii_task.models.currency.Currency;
 import org.example.sii_task.models.fundraiser.Fundraiser;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -52,12 +54,10 @@ public class CharityBox {
         this.collections = collections;
     }
 
-    public Collected donate(double amount, String currency) {
+    public Collected donate(BigDecimal amount, String currency) {
         Collected collection;
         if (collections.isEmpty()) {
-            Collected newCollection = CreateNewCollection(amount, currency);
-            System.out.println("DONATE " + getCollections());
-            return newCollection;
+            return CreateNewCollection(amount, currency);
         }
         for (Collected collected : collections) {
             if (collected.getCurrency().name().equals(currency)) {
@@ -70,7 +70,7 @@ public class CharityBox {
         return collection;
     }
 
-    private Collected CreateNewCollection (double amount, String currency){
+    private Collected CreateNewCollection (BigDecimal amount, String currency){
         Collected newCollection = new Collected();
         switch (currency){
             case "EUR":
@@ -82,7 +82,7 @@ public class CharityBox {
             case "PLN":
                 newCollection.setCurrency(Currency.PLN);
                 break;
-            default: throw new AssertionError();
+            default: throw new BadCurrency("Currency not accepted");
         }
         newCollection.setAmount(amount);
         collections.add(newCollection);

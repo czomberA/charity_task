@@ -1,8 +1,16 @@
 package org.example.sii_task.models.collected;
 
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotBlank;
+
+import java.math.BigDecimal;
+
 public class CollectedDTO {
+    @NotBlank
     private String charityBox;
-    private double amount;
+    @Digits(integer = 10, fraction = 2)
+    private BigDecimal amount;
+    @NotBlank
     private String currency;
 
     public String getCharityBox() {
@@ -13,11 +21,11 @@ public class CollectedDTO {
         this.charityBox = charityBox;
     }
 
-    public double getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
-    public void setAmount(double amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 

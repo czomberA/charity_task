@@ -1,8 +1,11 @@
 package org.example.sii_task.models.collected;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Digits;
 import org.example.sii_task.models.currency.Currency;
 import org.example.sii_task.models.charityBox.CharityBox;
+
+import java.math.BigDecimal;
 
 @Entity
 public class Collected {
@@ -12,7 +15,8 @@ public class Collected {
     @ManyToOne
     @JoinColumn(name = "charitybox_id")
     private CharityBox charityBox;
-    private double amount;
+    @Digits(integer = 10, fraction = 2)
+    private BigDecimal amount;
     @Enumerated(EnumType.STRING)
     @Column(name = "currency")
     private Currency currency;
@@ -20,8 +24,8 @@ public class Collected {
     }
 
 
-    public void donate(double donation){
-        this.amount = amount + donation;
+    public void donate(BigDecimal donation){
+        this.amount = amount.add(donation);
     }
 
     public CharityBox getCharityBox() {
@@ -32,11 +36,11 @@ public class Collected {
         this.charityBox = charityBox;
     }
 
-    public double getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
-    public void setAmount(double amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 

@@ -2,10 +2,12 @@ package org.example.sii_task.models.fundraiser;
 
 import jakarta.persistence.*;
 import jakarta.persistence.Entity;
+import jakarta.validation.constraints.Digits;
 import org.example.sii_task.models.currency.Currency;
 import org.example.sii_task.models.charityBox.CharityBox;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -14,7 +16,8 @@ public class Fundraiser implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private double account;
+    @Digits(integer = 10, fraction = 2)
+    private BigDecimal account;
     @Enumerated(EnumType.STRING)
     @Column(name = "currency")
     private Currency currency;
@@ -27,7 +30,7 @@ public class Fundraiser implements Serializable {
     public Fundraiser(String name, Currency currency) {
         this.name = name;
         this.currency = currency;
-        account = 0.0;
+        account = null;
     }
 
     public String getName() {
@@ -38,11 +41,11 @@ public class Fundraiser implements Serializable {
         this.name = name;
     }
 
-    public double getAccount() {
+    public BigDecimal getAccount() {
         return account;
     }
 
-    public void setAccount(double account) {
+    public void setAccount(BigDecimal account) {
         this.account = account;
     }
 
@@ -66,8 +69,13 @@ public class Fundraiser implements Serializable {
         boxes.add(charityBox);
     }
 
-    public void donate(double amount) {
-        this.account += amount;
+    public void donate(BigDecimal amount) {
+        if (this.account == null) {
+            this.account = amount;
+        } else {
+            this.account = account.add(amount);
+        }
+
     }
 
     @Override

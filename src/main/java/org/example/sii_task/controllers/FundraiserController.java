@@ -1,5 +1,6 @@
 package org.example.sii_task.controllers;
 
+import jakarta.validation.Valid;
 import org.example.sii_task.models.fundraiser.Fundraiser;
 import org.example.sii_task.models.fundraiser.FundraiserDTO;
 import org.example.sii_task.models.fundraiser.FundraiserReturnDTO;
@@ -21,16 +22,12 @@ public class FundraiserController {
     }
 
     @PostMapping()
-    public ResponseEntity<?> createFundraiser(@RequestBody FundraiserDTO fundraiserDTO) {
+    public ResponseEntity<?> createFundraiser(@Valid @RequestBody FundraiserDTO fundraiserDTO) {
         Fundraiser fundraiser = new Fundraiser();
         fundraiser.setName(fundraiserDTO.getName());
         fundraiser.setCurrency(fundraiserDTO.getCurrency());
-        try {
-            Fundraiser createdEvent = fundraiserService.createFundraiser(fundraiser);
-            return new ResponseEntity<>(createdEvent, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Fundraiser already exists", HttpStatus.CONFLICT);
-        }
+        Fundraiser createdEvent = fundraiserService.createFundraiser(fundraiser);
+        return new ResponseEntity<>(createdEvent, HttpStatus.CREATED);
 
     }
 

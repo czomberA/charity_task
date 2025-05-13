@@ -5,10 +5,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
+
 @Service
 public class CurrencyService {
-
-    private final String NBP_API_URL = "https://api.nbp.pl/api/exchangerates/rates/A/";
+    private static final MathContext mc = new MathContext(2, RoundingMode.HALF_DOWN);
 
 
     private final RestTemplate restTemplate;
@@ -17,7 +20,8 @@ public class CurrencyService {
         this.restTemplate = restTemplate;
     }
 
-    public double getRateToPln(String currencyCode) {
+    public BigDecimal getRateToPln(String currencyCode) {
+        String NBP_API_URL = "https://api.nbp.pl/api/exchangerates/rates/A/";
         String url = UriComponentsBuilder.fromHttpUrl(NBP_API_URL + currencyCode)
                 .queryParam("format", "json")
                 .toUriString();
@@ -25,32 +29,33 @@ public class CurrencyService {
         try {
             CurrencyRateResponse response = restTemplate.getForObject(url, CurrencyRateResponse.class);
             if (response != null && response.getRates() != null && !response.getRates().isEmpty()) {
-                return response.getRates().getFirst().getMid();
+                double rate = response.getRates().getFirst().getMid();
+                return BigDecimal.valueOf(rate);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return 0.0;
+        return null;
     }
 
     // Converts first to PLN, then to target currency. Caused by API I used (see ReadMe)
-    public double convertCurrency(String fromCurrency, String toCurrency, double amount) {
-        double fromCurrencyToPln = getRateToPln(fromCurrency);
-        double toCurrencyToPln = getRateToPln(toCurrency);
+    public BigDecimal convertCurrency(String fromCurrency, String toCurrency, BigDecimal amount) {
+        BigDecimal fromCurrencyToPln = getRateToPln(fromCurrency);
+        BigDecimal toCurrencyToPln = getRateToPln(toCurrency);
 
-        if (fromCurrencyToPln == 0.0 || toCurrencyToPln == 0.0) {
+        if (fromCurrencyToPln == null || toCurrencyToPln == null) {
             throw new RuntimeException("Unable to fetch exchange rates.");
         }
-        double amountInPln = amount * fromCurrencyToPln;
-        return amountInPln / toCurrencyToPln;
+        BigDecimal amountInPln = amount.multiply(fromCurrencyToPln);
+        return amountInPln.divide(toCurrencyToPln, mc);
     }
 
-    public double getRateFromPLN(String fromCurrency, double amount) {
-        double fromCurrencyToPln = getRateToPln(fromCurrency);
-        if (fromCurrencyToPln == 0.0) {
+    public BigDecimal getRateFromPLN(String fromCurrency, BigDecimal amount) {
+        BigDecimal fromCurrencyToPln = getRateToPln(fromCurrency);
+        if (fromCurrencyToPln == null) {
             throw new RuntimeException("Unable to fetch exchange rates.");
         }
         System.out.println("FROM CURRENCY TO PLN:" + fromCurrencyToPln);
-        return amount/fromCurrencyToPln;
+        return amount.divide(fromCurrencyToPln, mc);
     }
 }
