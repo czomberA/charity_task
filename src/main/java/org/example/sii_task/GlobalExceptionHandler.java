@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiError> handleIllegalArgument(IllegalArgumentException ex) {
-        //ApiError error = new ApiError(ex.getMessage(), HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(new ApiError(ex.getMessage(), HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -70,6 +69,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleEmpty(NotEmpty ex) {
         ApiError error = new ApiError(ex.getMessage(), HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NbpException.class)
+    public ResponseEntity<ApiError> handleNbp(NbpException ex) {
+        ApiError error = new ApiError(ex.getMessage(), HttpStatus.BAD_GATEWAY);
+        return new ResponseEntity<>(error, HttpStatus.BAD_GATEWAY);
     }
 
 }

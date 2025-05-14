@@ -1,5 +1,6 @@
 package org.example.sii_task.services;
 
+import org.example.sii_task.errorHandling.NbpException;
 import org.example.sii_task.models.currency.CurrencyRateResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -33,7 +34,7 @@ public class CurrencyService {
                 return BigDecimal.valueOf(rate);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new NbpException("Cannot convert currency. External API error.");
         }
         return null;
     }

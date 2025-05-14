@@ -1,33 +1,39 @@
 package org.example.sii_task.services;
 
+import jakarta.validation.Valid;
 import org.example.sii_task.errorHandling.*;
+import org.example.sii_task.models.charityBox.CharityBoxAssignDTO;
+import org.example.sii_task.models.charityBox.CharityBoxAssignedDTO;
 import org.example.sii_task.models.collected.Collected;
 import org.example.sii_task.models.collected.CollectedDTO;
 import org.example.sii_task.models.charityBox.CharityBox;
 import org.example.sii_task.models.charityBox.CharityBoxReturnDTO;
 import org.example.sii_task.models.fundraiser.Fundraiser;
+import org.example.sii_task.models.fundraiser.FundraiserBoxAssignedDTO;
 import org.example.sii_task.repositories.CharityBoxRepository;
 import org.example.sii_task.repositories.CollectedRepository;
 import org.example.sii_task.repositories.FundraiserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class CharityBoxService {
-    @Autowired
-    CharityBoxRepository charityBoxRepository;
-    @Autowired
-    FundraiserRepository fundraiserRepository;
-    @Autowired
-    private CollectedRepository collectedRepository;
-    @Autowired
-    private CurrencyService currencyService;
+    private final CharityBoxRepository charityBoxRepository;
+    private final FundraiserRepository fundraiserRepository;
+    private final CollectedRepository collectedRepository;
+    private final CurrencyService currencyService;
 
+    public CharityBoxService(CharityBoxRepository charityBoxRepository, FundraiserRepository fundraiserRepository, CollectedRepository collectedRepository, CurrencyService currencyService) {
+        this.charityBoxRepository = charityBoxRepository;
+        this.fundraiserRepository = fundraiserRepository;
+        this.collectedRepository = collectedRepository;
+        this.currencyService = currencyService;
+    }
 
     public Fundraiser setFundraiser(String fundraiser) {
 
@@ -52,9 +58,6 @@ public class CharityBoxService {
             throw new DoesNotExist(String.format("Box %s does not exist", id));
         }
         CharityBox foundBox = box.get();
-        if (foundBox.getFundraiser() != null) {
-            throw new AlreadyAssigned("Already assigned to a fundraiser");
-        }
         if (!foundBox.getCollections().isEmpty()) {
             throw new NotEmpty("Not empty");
         } else {
@@ -138,13 +141,13 @@ public class CharityBoxService {
                 if (currencyOfFundraiser.equals("PLN")) {
                     BigDecimal err = currencyService.getRateToPln(c.getCurrency().name());
                     System.out.println(err);
-                    box.getFundraiser().donate(c.getAmount().multiply(err).setScale(2, BigDecimal.ROUND_HALF_UP));
+                    box.getFundraiser().donate(c.getAmount().multiply(err).setScale(2, RoundingMode.HALF_UP));
 
                 } else if (c.getCurrency().name().equals("PLN")) {
-                    BigDecimal err = currencyService.getRateFromPLN(currencyOfFundraiser, c.getAmount()).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    BigDecimal err = currencyService.getRateFromPLN(currencyOfFundraiser, c.getAmount()).setScale(2, RoundingMode.HALF_UP);
                     box.getFundraiser().donate(err);
                 } else {
-                    BigDecimal err = currencyService.convertCurrency(c.getCurrency().name(), currencyOfFundraiser, c.getAmount()).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    BigDecimal err = currencyService.convertCurrency(c.getCurrency().name(), currencyOfFundraiser, c.getAmount()).setScale(2, RoundingMode.HALF_UP);
                     box.getFundraiser().donate(err);
                 }
             }
@@ -158,5 +161,20 @@ public class CharityBoxService {
         box.getCollections().clear();
         charityBoxRepository.save(box);
         fundraiserRepository.save(box.getFundraiser());
+    }
+
+    public CharityBoxAssignedDTO assign(String id, @Valid CharityBoxAssignDTO charityBoxAssignDTO) {
+        Optional<CharityBox> optionalBox = findById(id);
+        if (optionalBox.isEmpty()) {
+            throw new DoesNotExist("Charity Box with id " + id + " does not exist");
+        }
+        CharityBox existingBox = optionalBox.get();
+        canAssign(id);
+        existingBox.setFundraiser(setFundraiser(charityBoxAssignDTO.getFundraiser()));
+        registerBox(existingBox);
+        CharityBoxAssignedDTO assignedDTO = new CharityBoxAssignedDTO();
+        assignedDTO.setIdentifier(id);
+        assignedDTO.setFundraiser(new FundraiserBoxAssignedDTO(existingBox.getFundraiser().getName(), existingBox.getFundraiser().getCurrency().name()));
+        return assignedDTO;
     }
 }
