@@ -1,6 +1,6 @@
 package org.example.sii_task.models.currency;
 
-import java.math.BigDecimal;
+
 import java.util.List;
 
 public class CurrencyRateResponse {

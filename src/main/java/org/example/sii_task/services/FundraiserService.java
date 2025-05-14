@@ -1,7 +1,6 @@
 package org.example.sii_task.services;
 
 import org.example.sii_task.errorHandling.AlreadyExistsException;
-import org.example.sii_task.models.ApiError;
 import org.example.sii_task.models.fundraiser.Fundraiser;
 import org.example.sii_task.models.fundraiser.FundraiserReturnDTO;
 import org.example.sii_task.repositories.FundraiserRepository;
@@ -14,8 +13,12 @@ import java.util.Optional;
 
 @Service
 public class FundraiserService {
-    @Autowired
-    FundraiserRepository fundraiserRepository;
+
+    private final FundraiserRepository fundraiserRepository;
+
+    public FundraiserService(FundraiserRepository fundraiserRepository) {
+        this.fundraiserRepository = fundraiserRepository;
+    }
 
     public Fundraiser createFundraiser(Fundraiser fundraiser) {
         Optional<Fundraiser> optionalFundraiser = fundraiserRepository.getFundraiserByName(fundraiser.getName());

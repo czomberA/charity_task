@@ -60,8 +60,6 @@ public class CharityBoxService {
         CharityBox foundBox = box.get();
         if (!foundBox.getCollections().isEmpty()) {
             throw new NotEmpty("Not empty");
-        } else {
-            System.out.println(foundBox.getCollections());
         }
     }
 
@@ -105,6 +103,9 @@ public class CharityBoxService {
     }
 
     public void donate(CollectedDTO collectedDTO) {
+        if (collectedDTO.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new NegativeDonationException("Donation amount has to be a positive number");
+        }
         Optional<CharityBox> optionalBox = charityBoxRepository.getCharityBoxByIdentifier(collectedDTO.getCharityBox());
         CharityBox box;
         if (optionalBox.isEmpty()) {
@@ -130,7 +131,6 @@ public class CharityBoxService {
         }
 
         String currencyOfFundraiser = box.getFundraiser().getCurrency().name();
-        System.out.println(box.getCollections());
         List<Collected> collectionsToRemove = new ArrayList<>(box.getCollections());
 
         //It's this complex because of an API I use, please see ReadMe for details
@@ -140,7 +140,6 @@ public class CharityBoxService {
             } else {
                 if (currencyOfFundraiser.equals("PLN")) {
                     BigDecimal err = currencyService.getRateToPln(c.getCurrency().name());
-                    System.out.println(err);
                     box.getFundraiser().donate(c.getAmount().multiply(err).setScale(2, RoundingMode.HALF_UP));
 
                 } else if (c.getCurrency().name().equals("PLN")) {
@@ -166,7 +165,7 @@ public class CharityBoxService {
     public CharityBoxAssignedDTO assign(String id, @Valid CharityBoxAssignDTO charityBoxAssignDTO) {
         Optional<CharityBox> optionalBox = findById(id);
         if (optionalBox.isEmpty()) {
-            throw new DoesNotExist("Charity Box with id " + id + " does not exist");
+            throw new DoesNotExist(String.format("Charity Box with id %s does not exist", id));
         }
         CharityBox existingBox = optionalBox.get();
         canAssign(id);

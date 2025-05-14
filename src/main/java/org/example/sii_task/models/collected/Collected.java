@@ -15,7 +15,7 @@ public class Collected {
     @ManyToOne
     @JoinColumn(name = "charitybox_id")
     private CharityBox charityBox;
-    @Digits(integer = 10, fraction = 2)
+    @Digits(integer = 12, fraction = 2)
     private BigDecimal amount;
     @Enumerated(EnumType.STRING)
     @Column(name = "currency")

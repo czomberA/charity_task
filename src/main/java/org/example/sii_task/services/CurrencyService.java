@@ -45,7 +45,7 @@ public class CurrencyService {
         BigDecimal toCurrencyToPln = getRateToPln(toCurrency);
 
         if (fromCurrencyToPln == null || toCurrencyToPln == null) {
-            throw new RuntimeException("Unable to fetch exchange rates.");
+            throw new NbpException("Unable to fetch exchange rates.");
         }
         BigDecimal amountInPln = amount.multiply(fromCurrencyToPln);
         return amountInPln.divide(toCurrencyToPln, mc);
@@ -54,9 +54,8 @@ public class CurrencyService {
     public BigDecimal getRateFromPLN(String fromCurrency, BigDecimal amount) {
         BigDecimal fromCurrencyToPln = getRateToPln(fromCurrency);
         if (fromCurrencyToPln == null) {
-            throw new RuntimeException("Unable to fetch exchange rates.");
+            throw new NbpException("Unable to fetch exchange rates.");
         }
-        System.out.println("FROM CURRENCY TO PLN:" + fromCurrencyToPln);
         return amount.divide(fromCurrencyToPln, mc);
     }
 }

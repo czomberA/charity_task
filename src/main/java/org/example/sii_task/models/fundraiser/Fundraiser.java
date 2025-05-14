@@ -27,11 +27,6 @@ public class Fundraiser implements Serializable {
     public Fundraiser() {
     }
 
-    public Fundraiser(String name, Currency currency) {
-        this.name = name;
-        this.currency = currency;
-        account = null;
-    }
 
     public String getName() {
         return name;

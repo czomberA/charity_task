@@ -1,12 +1,14 @@
 package org.example.sii_task.models.fundraiser;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.example.sii_task.models.currency.Currency;
 
 public class FundraiserDTO {
     @NotBlank(message = "Name is required")
     @Size(max = 255, message = "Name must be at most 255 characters")
+    @Pattern(regexp = "[a-zA-Z ]+", message = "Only letters and spaces are allowed")
     private String name;
     @NotBlank(message = "Currency required")
     private String currency;

@@ -5,11 +5,6 @@ public class CharityBoxReturnDTO {
     private boolean isAssigned;
     private boolean isEmpty;
 
-    public CharityBoxReturnDTO(String identifier, boolean isAssigned, boolean isEmpty) {
-        this.identifier = identifier;
-        this.isAssigned = isAssigned;
-        this.isEmpty = isEmpty;
-    }
 
     public String getIdentifier() {
         return identifier;

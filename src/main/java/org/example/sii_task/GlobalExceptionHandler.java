@@ -77,4 +77,11 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_GATEWAY);
     }
 
+    @ExceptionHandler(NegativeDonationException.class)
+    public ResponseEntity<ApiError> handleNegativeDonation(NegativeDonationException ex) {
+        ApiError error = new ApiError(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+
 }

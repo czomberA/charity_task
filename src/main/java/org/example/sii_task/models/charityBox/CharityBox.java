@@ -25,9 +25,6 @@ public class CharityBox {
     public CharityBox() {
     }
 
-    public CharityBox(Fundraiser fundraiser) {
-        this.fundraiser = fundraiser;
-    }
 
     public String getIdentifier() {
         return identifier;
@@ -54,23 +51,23 @@ public class CharityBox {
         this.collections = collections;
     }
 
-    public Collected donate(BigDecimal amount, String currency) {
+    public void donate(BigDecimal amount, String currency) {
         Collected collection;
         if (collections.isEmpty()) {
-            return CreateNewCollection(amount, currency);
+            CreateNewCollection(amount, currency);
+            return;
         }
         for (Collected collected : collections) {
             if (collected.getCurrency().name().equals(currency)) {
                 collection = collected;
                 collection.donate(amount);
-                return collection;
+                return;
             }
         }
-        collection = CreateNewCollection(amount, currency);
-        return collection;
+        CreateNewCollection(amount, currency);
     }
 
-    private Collected CreateNewCollection (BigDecimal amount, String currency){
+    private void CreateNewCollection (BigDecimal amount, String currency){
         Collected newCollection = new Collected();
         switch (currency){
             case "EUR":
@@ -88,7 +85,6 @@ public class CharityBox {
         collections.add(newCollection);
         newCollection.setCharityBox(this);
         System.out.println("NC " + newCollection);
-        return newCollection;
     }
 
     @Override
