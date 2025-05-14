@@ -1,6 +1,6 @@
 package org.example.sii_task.services;
 
-import org.example.sii_task.errorHandling.NbpException;
+import org.example.sii_task.exception.NbpException;
 import org.example.sii_task.models.currency.CurrencyRateResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;

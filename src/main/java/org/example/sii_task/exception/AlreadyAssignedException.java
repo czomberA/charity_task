@@ -1,4 +1,4 @@
-package org.example.sii_task.errorHandling;
+package org.example.sii_task.exception;
 
 public class AlreadyAssignedException extends RuntimeException {
     public AlreadyAssignedException(String message) {

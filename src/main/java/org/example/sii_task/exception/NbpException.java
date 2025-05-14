@@ -1,4 +1,4 @@
-package org.example.sii_task.errorHandling;
+package org.example.sii_task.exception;
 
 public class NbpException extends RuntimeException {
     public NbpException(String message) {

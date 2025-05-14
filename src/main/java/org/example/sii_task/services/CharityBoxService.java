@@ -1,7 +1,7 @@
 package org.example.sii_task.services;
 
 import jakarta.validation.Valid;
-import org.example.sii_task.errorHandling.*;
+import org.example.sii_task.exception.*;
 import org.example.sii_task.models.charityBox.CharityBoxAssignDTO;
 import org.example.sii_task.models.charityBox.CharityBoxAssignedDTO;
 import org.example.sii_task.models.collected.Collected;
@@ -42,7 +42,7 @@ public class CharityBoxService {
         if (existing.isPresent()) {
             return existing.get();
         } else {
-            throw new DoesNotExist(String.format("Fundraiser %s does not exist", fundraiser));
+            throw new DoesNotExistException(String.format("Fundraiser %s does not exist", fundraiser));
         }
 
     }
@@ -55,11 +55,11 @@ public class CharityBoxService {
     public void canAssign(String id){
         Optional<CharityBox> box = charityBoxRepository.getCharityBoxByIdentifier(id);
         if (box.isEmpty()) {
-            throw new DoesNotExist(String.format("Box %s does not exist", id));
+            throw new DoesNotExistException(String.format("Box %s does not exist", id));
         }
         CharityBox foundBox = box.get();
         if (!foundBox.getCollections().isEmpty()) {
-            throw new NotEmpty("Not empty");
+            throw new NotEmptyException("Not empty");
         }
     }
 
@@ -98,7 +98,7 @@ public class CharityBoxService {
             }
             charityBoxRepository.delete(box);
         } else {
-            throw new DoesNotExist("Box does not exist. May have been removed already.");
+            throw new DoesNotExistException("Box does not exist. May have been removed already.");
         }
     }
 
@@ -109,7 +109,7 @@ public class CharityBoxService {
         Optional<CharityBox> optionalBox = charityBoxRepository.getCharityBoxByIdentifier(collectedDTO.getCharityBox());
         CharityBox box;
         if (optionalBox.isEmpty()) {
-            throw new DoesNotExist("Box does not exist. Cannot donate.");
+            throw new DoesNotExistException("Box does not exist. Cannot donate.");
         }
         box = optionalBox.get();
         box.donate(collectedDTO.getAmount(), collectedDTO.getCurrency());
@@ -120,11 +120,11 @@ public class CharityBoxService {
         Optional<CharityBox> optionalBox = charityBoxRepository.getCharityBoxByIdentifier(id);
 
         if (optionalBox.isEmpty()) {
-            throw new DoesNotExist("Box does not exist. Cannot empty.");
+            throw new DoesNotExistException("Box does not exist. Cannot empty.");
         }
         CharityBox box = optionalBox.get();
         if (box.getFundraiser() == null) {
-            throw new NotAssigned("Box is not assigned. Cannot empty.");
+            throw new NotAssignedException("Box is not assigned. Cannot empty.");
         }
         if (box.getCollections().isEmpty()) {
             return;
@@ -165,7 +165,7 @@ public class CharityBoxService {
     public CharityBoxAssignedDTO assign(String id, @Valid CharityBoxAssignDTO charityBoxAssignDTO) {
         Optional<CharityBox> optionalBox = findById(id);
         if (optionalBox.isEmpty()) {
-            throw new DoesNotExist(String.format("Charity Box with id %s does not exist", id));
+            throw new DoesNotExistException(String.format("Charity Box with id %s does not exist", id));
         }
         CharityBox existingBox = optionalBox.get();
         canAssign(id);

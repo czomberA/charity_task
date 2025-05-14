@@ -1,6 +1,6 @@
 package org.example.sii_task;
 
-import org.example.sii_task.errorHandling.*;
+import org.example.sii_task.exception.*;
 import org.example.sii_task.models.ApiError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,8 +26,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new ApiError(message, HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(DoesNotExist.class)
-    public ResponseEntity<ApiError> handleFundraiserNotFound(DoesNotExist ex) {
+    @ExceptionHandler(DoesNotExistException.class)
+    public ResponseEntity<ApiError> handleFundraiserNotFound(DoesNotExistException ex) {
         ApiError error = new ApiError(
                 ex.getMessage(),
                 HttpStatus.NOT_FOUND
@@ -47,26 +47,26 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(BadCurrency.class)
-    public ResponseEntity<ApiError> handleBadCurrency(BadCurrency ex) {
+    @ExceptionHandler(BadCurrencyException.class)
+    public ResponseEntity<ApiError> handleBadCurrency(BadCurrencyException ex) {
         ApiError error = new ApiError(ex.getMessage(), HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(NotAssigned.class)
-    public ResponseEntity<ApiError> handleNotAssigned(NotAssigned ex) {
+    @ExceptionHandler(NotAssignedException.class)
+    public ResponseEntity<ApiError> handleNotAssigned(NotAssignedException ex) {
         ApiError error = new ApiError(ex.getMessage(), HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(AlreadyAssigned.class)
-    public ResponseEntity<ApiError> handleAlreadyAssigned(AlreadyAssigned ex) {
+    @ExceptionHandler(AlreadyAssignedException.class)
+    public ResponseEntity<ApiError> handleAlreadyAssigned(AlreadyAssignedException ex) {
         ApiError error = new ApiError(ex.getMessage(), HttpStatus.CONFLICT);
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(NotEmpty.class)
-    public ResponseEntity<ApiError> handleEmpty(NotEmpty ex) {
+    @ExceptionHandler(NotEmptyException.class)
+    public ResponseEntity<ApiError> handleEmpty(NotEmptyException ex) {
         ApiError error = new ApiError(ex.getMessage(), HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }

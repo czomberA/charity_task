@@ -2,7 +2,7 @@ package org.example.sii_task.models.charityBox;
 
 import jakarta.persistence.*;
 import jakarta.persistence.Entity;
-import org.example.sii_task.errorHandling.BadCurrency;
+import org.example.sii_task.exception.BadCurrencyException;
 import org.example.sii_task.models.collected.Collected;
 import org.example.sii_task.models.currency.Currency;
 import org.example.sii_task.models.fundraiser.Fundraiser;
@@ -79,7 +79,7 @@ public class CharityBox {
             case "PLN":
                 newCollection.setCurrency(Currency.PLN);
                 break;
-            default: throw new BadCurrency("Currency not accepted");
+            default: throw new BadCurrencyException("Currency not accepted");
         }
         newCollection.setAmount(amount);
         collections.add(newCollection);

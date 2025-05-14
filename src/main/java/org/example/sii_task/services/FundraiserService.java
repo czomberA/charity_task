@@ -1,10 +1,9 @@
 package org.example.sii_task.services;
 
-import org.example.sii_task.errorHandling.AlreadyExistsException;
+import org.example.sii_task.exception.AlreadyExistsException;
 import org.example.sii_task.models.fundraiser.Fundraiser;
 import org.example.sii_task.models.fundraiser.FundraiserReturnDTO;
 import org.example.sii_task.repositories.FundraiserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
